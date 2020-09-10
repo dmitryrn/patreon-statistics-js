@@ -1,0 +1,22 @@
+version: '3.8'
+services:
+  app:
+    build:
+      context: ..
+    expose:
+      - 8080
+  db:
+    image: postgres
+    restart: always
+    expose:
+      - 5432
+    environment:
+      POSTGRES_PASSWORD: test
+      POSTGRES_USER: test
+      POSTGRES_DB: test
+  test-suit:
+    environment:
+      APP_URL: "app:8080"
+    build:
+      context: ..
+      dockerfile: ./test-functional/test-suit.yaml
