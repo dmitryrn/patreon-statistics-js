@@ -1,13 +1,14 @@
 import * as express from 'express'
 import * as http from 'http'
 import { Socket } from 'net'
-import * as winston from 'winston'
 
-export const newServer = (config: Config, logger: winston.Logger): IServer => {
-    return new Server(config, logger)
+import { IContainer } from '../container'
+
+export const newServer = (config: Config, container: IContainer): IServer => {
+    return new Server(config, container)
 }
 
-type Config = {
+export type Config = {
     port: number
     routes: {
         path: string
@@ -16,7 +17,7 @@ type Config = {
     }[]
 }
 
-interface IServer {
+export interface IServer {
     listen: () => Promise<void>
     shutDown: () => Promise<void>
 }
@@ -25,14 +26,14 @@ interface IServer {
 export class Server implements IServer {
     private config: Config
     private app: express.Express
-    private logger: winston.Logger
-    private httpServer: http.Server
+    private container: IContainer
+    private httpServer: http.Server | null = null
     private connections: Socket[] = []
 
-    constructor(config: Config, logger: winston.Logger) {
+    constructor(config: Config, container: IContainer) {
         this.config = config
         this.app = express()
-        this.logger = logger
+        this.container = container
 
         this.config.routes.forEach(({ method, handler, path }) => {
             if (method == 'get') {
@@ -49,7 +50,7 @@ export class Server implements IServer {
                         error = err
                         res.status(status).end()
                     } finally {
-                        this.logger.log(
+                        this.container.logger.log(
                             error === null ? 'info' : 'error',
                             'request finished',
                             {
@@ -70,7 +71,7 @@ export class Server implements IServer {
     listen(): Promise<void> {
         return new Promise((resolve) => {
             this.httpServer = this.app.listen(this.config.port, () => {
-                this.logger.info('Server listen on port', {
+                this.container.logger.info('Server listen on port', {
                     port: this.config.port,
                 })
                 resolve()
@@ -91,9 +92,16 @@ export class Server implements IServer {
 
     shutDown(): Promise<void> {
         return new Promise((resolve, reject) => {
-            this.logger.info('Shutting down server')
+            this.container.logger.info('Shutting down server')
+            
+            if (!this.httpServer) {
+                this.container.logger.info(`Class Server doesn't have httpServer property, resolving`)
+                resolve()
+                return
+            }
+
             this.httpServer.close(() => {
-                this.logger.info('Closed out remaining connections')
+                this.container.logger.info('Closed out remaining connections')
                 resolve()
                 // process.exit(0)
             })

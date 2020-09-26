@@ -1,10 +1,10 @@
-import type { Snapshot } from '../domain/snapshot'
+import type { PatreonUser } from '../domain/patreon-user'
 import * as express from 'express'
 import 'reflect-metadata'
 import { IStatisticsService } from '../service/statistics'
 
 interface IStatisticsController {
-    GetStats(r: express.Request): Promise<Snapshot[]>
+    GetUsers(r: express.Request): Promise<PatreonUser[]>
 }
 
 export const newStatisticsController = (
@@ -18,16 +18,20 @@ class StatisticsController implements IStatisticsController {
         this.statsService = statsService
     }
 
-    async GetStats(r: express.Request): Promise<Snapshot[]> {
-        let userID: string
-        if (r.params['userID'] !== '') {
-            userID = r.params['userID']
+    async GetUsers(r: express.Request): Promise<PatreonUser[]> {
+        // if (r.params['userID'] === '') {
+        //     throw new Error('userID is required')
+        // }
+        // const userID = r.params['userID']
+
+        let users: ReturnType<IStatisticsService['GetUsers']>
+        try {
+            users = await this.statsService.GetUsers()
+        } catch (error) {
+            this.container.logger.info('Failed to get users')
+            throw error
         }
 
-        console.log({ this: this })
-
-        this.statsService.GetStats(userID)
-
-        return []
+        return users
     }
 }

@@ -1,44 +1,35 @@
 import { newStatisticsController } from './controller/stats'
 import { newServer } from './server/server'
 import type { appDo as appDoType } from '../../cmd/type'
-import * as winston from 'winston'
 
 import { newStatisticsService } from './service/statistics'
-
-const TYPES = {
-    Warrior: Symbol.for('Warrior'),
-    Weapon: Symbol.for('Weapon'),
-    ThrowableWeapon: Symbol.for('ThrowableWeapon'),
-}
+import { newContainer } from './container'
 
 export const appDo: appDoType = async () => {
     return new Promise(async (resolve, reject) => {
-        const logger = winston.createLogger({
-            transports: [new winston.transports.Console()],
-        })
+        const container = newContainer()
 
-        const statsService = newStatisticsService()
+        const statsService = newStatisticsService(container)
 
         const statsController = newStatisticsController(statsService)
 
-        const server = newServer(
+        const server = container.server(
             {
                 port: 8080,
                 routes: [
                     {
                         path: '/statistics',
                         method: 'get',
-                        handler: statsController.GetStats.bind(statsController),
+                        handler: statsController.GetUsers.bind(statsController),
                     },
                 ],
             },
-            logger
         )
 
         await server.listen()
 
         const onKill = () => {
-            logger.info(
+            container.logger.info(
                 'Received kill signal, server is shutting down gracefully'
             )
             server.shutDown()
