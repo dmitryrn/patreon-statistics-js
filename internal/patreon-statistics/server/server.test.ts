@@ -1,7 +1,9 @@
-import { Server } from './server'
 import * as winston from 'winston'
-
 import * as Transport from 'winston-transport'
+import { createMock } from 'ts-auto-mock';
+
+import { Server } from './server'
+import { IContainer } from '../container'
 
 class DebugTransport extends Transport {
     private logs: any[]
@@ -22,6 +24,8 @@ class DebugTransport extends Transport {
 }
 
 test('test start and shutdown', async () => {
+    const containerMock = createMock<IContainer>()
+
     const logs: any[] = []
 
     const logger = winston.createLogger({
@@ -36,7 +40,7 @@ test('test start and shutdown', async () => {
             port: 8998,
             routes: [],
         },
-        logger
+        containerMock,
     )
 
     await s.listen()

@@ -9,14 +9,13 @@ export interface IContainer {
     readonly db: db.IDB
 }
 
-export const newContainer = (serverConfig: server.Config, dbConfig: db.Config): IContainer => new Container(serverConfig, dbConfig)
+export const newContainer = (serverConfig: server.Config): IContainer => new Container(serverConfig)
 
 class Container implements IContainer {
     deps = new Map<string, any>()
 
     constructor(
         private serverConfig: server.Config,
-        private dbConfig: db.Config,
     ) {
 
     }
@@ -52,6 +51,6 @@ class Container implements IContainer {
     }
 
     get db(): db.IDB {
-        return this.getDep('db', () => db.newDB(this.dbConfig))
+        return this.getDep('db', db.newDB)
     }
 }

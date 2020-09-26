@@ -1,0 +1,21 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model patreon_user {
+  id String @id
+}
+
+model snapshot {
+  user_id         String
+  monthly_earning Float?
+  patrons_count   Int?
+  ts              DateTime
+
+  @@id([ts, user_id])
+}

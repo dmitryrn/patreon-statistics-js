@@ -1,10 +1,9 @@
-import type { Client } from 'pg'
-import { QueryBuilder } from 'knex'
 import { PatreonUser } from '../domain/patreon-user'
 import { IContainer } from '../container'
+import { Result, ok, err } from 'neverthrow'
 
 export interface IUserRepository {
-    GetAll(): Promise<PatreonUser[]>
+    GetAll(limit?: number): Promise<Result<PatreonUser[], Error>>
 }
 
 export const NewUserRepository = (container: IContainer) =>
@@ -13,12 +12,11 @@ export const NewUserRepository = (container: IContainer) =>
 class UserRepository implements IUserRepository {
     constructor(private container: IContainer) {}
 
-    async GetAll(): Promise<PatreonUser[]> {
-        const { sql, bindings } = new QueryBuilder().select('id').from('patreon_user').toSQL().toNative()
-
-
-        const users = await this.container.db.query<string>(sql, bindings)
-
-        return users.rows
+    async GetAll(limit?: number): Promise<Result<PatreonUser[], Error>> {
+        try {
+            return ok(await this.container.db.client.patreon_user.findMany({ take: limit }))
+        } catch (error) {
+            return err(error)
+        }
     }
 }
