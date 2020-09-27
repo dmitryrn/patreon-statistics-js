@@ -1,10 +1,11 @@
-import * as express from 'express'
+import type * as express from 'express'
+import type { Result } from 'neverthrow'
 
 import type { IContainer } from '../container'
 import type { PatreonUser } from '../domain/patreon-user'
 
-interface IUserController {
-    GetUsers(r: express.Request): Promise<PatreonUser[]>
+export interface IUserController {
+    Get10(r: express.Request): Promise<Result<PatreonUser[], Error>>
 }
 
 export const newUserController = (
@@ -14,12 +15,12 @@ export const newUserController = (
 class UserController implements IUserController {
     constructor(private container: IContainer) {}
 
-    async GetUsers(r: express.Request): Promise<PatreonUser[]> {
-        try {
-            return await this.container.userService.GetUsers()
-        } catch (error) {
-            this.container.logger.info('Failed to get users from userService', { error })
-            throw error
+    async Get10(r: express.Request): Promise<Result<PatreonUser[], Error>> {
+        const result = await this.container.userService.GetMany({ limit: 10 })
+        if (result.isErr()) {
+            this.container.logger.error('Failed to get users from userService', { error: result.error })
         }
+
+        return result
     }
 }

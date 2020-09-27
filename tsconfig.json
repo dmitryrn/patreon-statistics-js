@@ -11,9 +11,18 @@
         "strictNullChecks": true,
         "strictPropertyInitialization": true,
         "alwaysStrict": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
         "lib": [
             "ES2015"
         ],
-        "target": "ES2020"
+        "target": "ES2020",
+        "plugins": [
+            // https://typescript-tdd.github.io/ts-auto-mock/installation
+            {
+              "transform": "ts-auto-mock/transformer",
+              "cacheBetweenTests": false
+            }
+        ]
     }
 }

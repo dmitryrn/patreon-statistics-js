@@ -1,6 +1,8 @@
 version: '3.8'
 services:
   app:
+    environment:
+      DATABASE_URL: "postgresql://test:test@db:5432/test"
     build:
       context: ..
     expose:
@@ -17,6 +19,7 @@ services:
   test-suit:
     environment:
       APP_URL: "app:8080"
+      DATABASE_URL: "postgresql://test:test@db:5432/test"
     build:
       context: ..
       dockerfile: ./test-functional/test-suit.yaml

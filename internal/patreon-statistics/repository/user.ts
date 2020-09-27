@@ -3,18 +3,19 @@ import { IContainer } from '../container'
 import { Result, ok, err } from 'neverthrow'
 
 export interface IUserRepository {
-    GetAll(limit?: number): Promise<Result<PatreonUser[], Error>>
+    GetMany(params: { limit?: number }): Promise<Result<PatreonUser[], Error>>
 }
 
-export const NewUserRepository = (container: IContainer) =>
+export const newUserRepository = (container: IContainer) =>
     new UserRepository(container)
 
 class UserRepository implements IUserRepository {
     constructor(private container: IContainer) {}
 
-    async GetAll(limit?: number): Promise<Result<PatreonUser[], Error>> {
+    async GetMany(params: { limit?: number }): Promise<Result<PatreonUser[], Error>> {
         try {
-            return ok(await this.container.db.client.patreon_user.findMany({ take: limit }))
+            const dbUsers = await this.container.db.client.patreon_user.findMany({ take: params.limit })
+            return ok(dbUsers as PatreonUser[])
         } catch (error) {
             return err(error)
         }

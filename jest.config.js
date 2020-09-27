@@ -1,8 +1,16 @@
 module.exports = {
-    // roots: ['<rootDir>/src'],
     transform: {
         '.ts': 'ts-jest',
     },
-    // testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.tsx?$',
     moduleFileExtensions: ['ts', 'js'],
+
+    // https://typescript-tdd.github.io/ts-auto-mock/installation
+    globals: {
+        'ts-jest': {
+            compiler: 'ttypescript'
+        }
+    },
+    setupFiles: [
+        '<rootDir>config.ts'
+    ]
 }

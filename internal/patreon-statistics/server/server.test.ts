@@ -26,15 +26,6 @@ class DebugTransport extends Transport {
 test('test start and shutdown', async () => {
     const containerMock = createMock<IContainer>()
 
-    const logs: any[] = []
-
-    const logger = winston.createLogger({
-        transports: [
-            new winston.transports.Console(),
-            new DebugTransport(logs),
-        ],
-    })
-
     const s = new Server(
         {
             port: 8998,
@@ -49,14 +40,7 @@ test('test start and shutdown', async () => {
 
     await new Promise((r) => setTimeout(r, 500))
 
-    const mustIncludeMessages = [
-        'Server listen on port',
-        'Shutting down server',
-        'Closed out remaining connections',
-    ]
-    const len = logs.filter((info: any) =>
-        mustIncludeMessages.some((m) => info.message == m)
-    ).length
-
-    expect(len).toBe(3)
+    expect(containerMock.logger.info).toBeCalledWith('Server listen on port', {"port": 8998})
+    expect(containerMock.logger.info).toBeCalledWith('Shutting down server')
+    expect(containerMock.logger.info).toBeCalledWith('Closed out remaining connections')
 })

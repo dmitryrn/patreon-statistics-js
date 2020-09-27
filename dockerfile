@@ -8,8 +8,10 @@ RUN npm install
 
 COPY . .
 
+RUN rm -rf test-functional
+
 RUN npx tsc --outDir ./build
 
-RUN pwd
+RUN npx prisma generate
 
 CMD ["node", "./build/cmd/patreon-statistics.js"]

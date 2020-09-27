@@ -1,8 +1,13 @@
 import * as express from 'express'
-import * as http from 'http'
-import { Socket } from 'net'
+import type * as http from 'http'
+import type { Socket } from 'net'
+import type{ Result } from 'neverthrow'
 
 import { IContainer } from '../container'
+
+type AnyJson =  boolean | number | string | null | JsonArray | JsonMap
+type JsonMap = { [key: string]: AnyJson }
+type JsonArray = AnyJson[]
 
 export const newServer = (config: Config, container: IContainer): IServer => {
     return new Server(config, container)
@@ -13,7 +18,7 @@ export type Config = {
     routes: {
         path: string
         method: 'get' | 'post'
-        handler: (r: express.Request) => Promise<any>
+        handler: (r: express.Request) => Promise<Result<AnyJson, Error>>
     }[]
 }
 
@@ -38,31 +43,33 @@ export class Server implements IServer {
         this.config.routes.forEach(({ method, handler, path }) => {
             if (method == 'get') {
                 this.app.get(path, async (req, res) => {
-                    let status = 500
-                    let data = '<not assigned>'
-                    let error = null
-                    try {
-                        data = await handler(req)
-                        status = 200
-                        res.json(data)
-                    } catch (err) {
-                        status = 500
-                        error = err
+                    const result = await handler(req)
+                    if (result.isErr()) {
+                        const status = 500
+                        const error = result.error
+
+                        this.container.logger.error('request finished with error', {
+                            path,
+                            status,
+                            errorMessage: error.message,
+                            errorCode: error.name,
+                            errorStack: error.stack,
+                        })
+                        
                         res.status(status).end()
-                    } finally {
-                        this.container.logger.log(
-                            error === null ? 'info' : 'error',
-                            'request finished',
-                            {
-                                path,
-                                status,
-                                data,
-                                errorMessage: error?.message,
-                                errorCode: error?.code,
-                                errorStack: error?.stack,
-                            }
-                        )
+                        return
                     }
+
+                    const status = 200
+                    const data = result.value
+
+                    this.container.logger.log('request finished', {
+                        path,
+                        status,
+                        data,
+                    })
+
+                    res.json(data).end()
                 })
             }
         })

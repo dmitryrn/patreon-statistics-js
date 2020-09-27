@@ -1,8 +1,9 @@
+import { Result } from 'neverthrow'
 import type { IContainer } from '../container'
 import type { PatreonUser } from '../domain/patreon-user'
 
-interface IUserService {
-    GetUsers(): Promise<PatreonUser[]>
+export interface IUserService {
+    GetMany(params: { limit?: number }): Promise<Result<PatreonUser[], Error>>
 }
 
 export const newUserService = (
@@ -12,12 +13,11 @@ export const newUserService = (
 class UserService implements IUserService {
     constructor(private container: IContainer) {}
 
-    async GetUsers(): Promise<PatreonUser[]> {
-        try {
-            return await this.container.userRepository.GetUsers()
-        } catch (error) {
-            this.container.logger.info('Failed to get users from userRepository', { error })
-            throw error
-        }
+    async GetMany(params: { limit?: number }): Promise<Result<PatreonUser[], Error>> {
+        const result = await this.container.userRepository.GetMany(params)
+        if (result.isErr())
+            this.container.logger.error('Failed to get users from userRepository', { params })
+
+        return result
     }
 }

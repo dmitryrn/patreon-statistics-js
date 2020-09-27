@@ -1,38 +1,29 @@
-import { newStatisticsController } from './controller/stats'
-import { newServer } from './server/server'
 import type { appDo as appDoType } from '../../cmd/type'
 
-import { newStatisticsService } from './service/statistics'
-import { newContainer } from './container'
+import { IContainer, newContainer } from './container'
 
 export const appDo: appDoType = async () => {
     return new Promise(async (resolve, reject) => {
         const container = newContainer()
 
-        const statsService = newStatisticsService(container)
+        container.setServerConfig({
+            port: 8080,
+            routes: [
+                {
+                    path: '/10-users',
+                    method: 'get',
+                    handler: (container: IContainer) => container.userController.Get10.bind(container.userController),
+                },
+            ],
+        })
 
-        const statsController = newStatisticsController(statsService)
-
-        const server = container.server(
-            {
-                port: 8080,
-                routes: [
-                    {
-                        path: '/statistics',
-                        method: 'get',
-                        handler: statsController.GetUsers.bind(statsController),
-                    },
-                ],
-            },
-        )
-
-        await server.listen()
+        await container.server.listen()
 
         const onKill = () => {
             container.logger.info(
                 'Received kill signal, server is shutting down gracefully'
             )
-            server.shutDown()
+            container.server.shutDown()
             resolve()
         }
         process.on('SIGTERM', onKill)

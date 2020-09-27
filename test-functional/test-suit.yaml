@@ -2,12 +2,15 @@ FROM node:14
 
 WORKDIR /usr/src/app
 
-COPY package*.json tsconfig.json jest.config.js ./
+COPY package*.json tsconfig.json jest.config.js config.ts ./
+COPY ./prisma/schema.prisma ./prisma/schema.prisma
+COPY ./internal ./internal
+COPY ./scripts/migrations.ts ./scripts/migrations.ts
+
+COPY ./test-functional/*.ts ./test-functional
 
 RUN npm install
 
-COPY ./test-functional/*.ts .
-
-RUN ls; pwd
+RUN npx prisma generate
 
 CMD ["npx", "jest"]

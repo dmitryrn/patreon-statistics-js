@@ -1,23 +1,21 @@
-import { Client } from 'pg'
+import * as assert from 'assert'
+import { PrismaClient } from "@prisma/client"
 
-(async () => {
+assert.ok(process.env?.DATABASE_URL, `DATABASE_URL doesn't set`)
+
+export const run = async () => {
     try {
-        const db = new Client({
-            database: 'test',
-            user: 'test',
-            password: 'test',
-            host: 'localhost',
-        })
+        const db = new PrismaClient()
 
-        await db.connect()
+        await db.$connect()
 
-        await db.query(`
+        await db.$queryRaw(`
             create table if not exists patreon_user (
                 id varchar(120) primary key
             )
         `)
     
-        await db.query(`
+        await db.$queryRaw(`
             create table if not exists snapshot (
                 user_id         varchar(120) references patreon_user (id),
                 monthly_earning decimal check (monthly_earning > 0),
@@ -28,8 +26,8 @@ import { Client } from 'pg'
             )
         `)
 
-        db.end()
+        await db.$disconnect()
     } catch (err) {
         console.log('Failed to run migrations', err)
     }
-})()
+}
