@@ -1,5 +1,5 @@
 import { err, ok, Result } from 'neverthrow'
-import { PrismaClient } from "@prisma/client"
+import type { PrismaClient } from "@prisma/client"
 import { IContainer } from '../container'
 
 export interface IDB {
@@ -11,17 +11,17 @@ export interface IDB {
 export const newDB = (container: IContainer): IDB => new DB(container)
 
 class DB implements IDB {
-    public client: PrismaClient
+    public client: any
 
     constructor(private container: IContainer) {
-        this.client = new PrismaClient()
+        // this.client = new PrismaClient()
     }
 
-    connect() {
-        return this.client.$connect()
+    async connect() {
+        // return this.client.$connect()
     }
 
-    disconnect() {
-        return this.client.$disconnect()
+    async disconnect() {
+        // return this.client.$disconnect()
     }
 }
