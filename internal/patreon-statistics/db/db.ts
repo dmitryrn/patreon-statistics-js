@@ -1,5 +1,5 @@
 import { err, ok, Result } from 'neverthrow'
-import type { PrismaClient } from "@prisma/client"
+import { PrismaClient } from "@prisma/client"
 import { IContainer } from '../container'
 
 export interface IDB {
@@ -11,10 +11,10 @@ export interface IDB {
 export const newDB = (container: IContainer): IDB => new DB(container)
 
 class DB implements IDB {
-    public client: any
+    public client: PrismaClient
 
     constructor(private container: IContainer) {
-        // this.client = new PrismaClient()
+        this.client = new PrismaClient()
     }
 
     async connect() {
