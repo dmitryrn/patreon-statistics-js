@@ -1,6 +1,5 @@
 import { appDo } from '../internal/patreon-statistics/patreon-statistics'
 
-console.log('starting patreon-statistics')
 appDo()
     .then(() => {
         console.log('patreon-statistics exited without error')

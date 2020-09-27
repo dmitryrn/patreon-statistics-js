@@ -1,11 +1,11 @@
-run-local: export DATABASE_URL=postgresql://test:test@localhost:5432/test
+run-local-watch: export DATABASE_URL=postgresql://test:test@localhost:5432/test
 
-.PHONY: run-local
-run-local:
+.PHONY: run-local-watch
+run-local-watch:
 	modd
 
-.PHONY: test-functional
-test-functional:
+.PHONY: test-functional-watch
+test-functional-watch:
 	modd -f modd-func.conf
 
 # in case it didn't stop itself

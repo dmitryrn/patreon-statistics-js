@@ -1,3 +1,4 @@
+import { ConsoleTransportOptions } from 'winston/lib/winston/transports'
 import type { appDo as appDoType } from '../../cmd/type'
 
 import { IContainer, newContainer } from './container'
@@ -17,15 +18,41 @@ export const appDo: appDoType = async () => {
             ],
         })
 
-        await container.server.listen()
+        try {
+            await container.db.connect()
+            container.logger.info('connected to database')
+        } catch (error) {
+            container.logger.error('cannot connect to db', error)
+            reject(error)
+            return
+        }
+        try {
+            await container.server.listen()
+        } catch (error) {
+            container.logger.error('cannot start server', error)
+            reject(error)
+            return
+        }
 
-        const onKill = () => {
-            container.logger.info(
-                'Received kill signal, server is shutting down gracefully'
-            )
-            container.server.shutDown()
+        const onKill = async (code: NodeJS.Signals) => {
+            container.logger.info(`Received exit signal ${code}, shutting down gracefully`)
+            
+            try {
+                await container.db.disconnect()
+                container.logger.info('disconnected from db')
+            } catch (error) {
+                container.logger.error('dirty disconnect from db', error)
+            }
+            try {
+                await container.server.shutDown()
+                container.logger.info('server stopped')
+            } catch (error) {
+                container.logger.error('dirty server shutdown', error)
+            }
+
             resolve()
         }
+
         process.on('SIGTERM', onKill)
         process.on('SIGINT', onKill)
     })

@@ -18,7 +18,7 @@ class UserController implements IUserController {
     async Get10(r: express.Request): Promise<Result<PatreonUser[], Error>> {
         const result = await this.container.userService.GetMany({ limit: 10 })
         if (result.isErr()) {
-            this.container.logger.error('Failed to get users from userService', { error: result.error })
+            this.container.logger.error('Failed to get users from userService', result.error)
         }
 
         return result

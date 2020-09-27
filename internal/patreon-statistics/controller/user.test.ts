@@ -4,7 +4,7 @@ import { createMock } from 'ts-auto-mock'
 import * as express from 'express'
 import { ok } from "neverthrow"
 
-test('test', async () => {
+test('Get10', async () => {
     const container = createMock<IContainer>({
         userService: {
             async GetMany({ limit }) {

@@ -26,6 +26,7 @@
     "@types/node-fetch": "^2.5.7",
     "@types/pg": "^7.14.5",
     "@types/supertest": "^2.0.10",
+    "@types/wtfnode": "^0.7.0",
     "cheerio": "^1.0.0-rc.3",
     "express": "^4.17.1",
     "intermock": "^0.2.2",
@@ -40,6 +41,7 @@
     "ttypescript": "^1.5.12",
     "url": "^0.11.0",
     "winston": "^3.3.3",
+    "wtfnode": "^0.8.3",
     "yargs": "^16.0.3"
   }
 }

@@ -1,21 +1,27 @@
-import { ResultAsync } from 'neverthrow'
+import { err, ok, Result } from 'neverthrow'
 import { PrismaClient } from "@prisma/client"
+import { IContainer } from '../container'
 
 export interface IDB {
     client: PrismaClient
-    connect(): ResultAsync<void, Error>
+    connect(): Promise<void>
+    disconnect(): Promise<void>
 }
 
-export const newDB = (): IDB => new DB()
+export const newDB = (container: IContainer): IDB => new DB(container)
 
 class DB implements IDB {
     public client: PrismaClient
 
-    constructor() {
+    constructor(private container: IContainer) {
         this.client = new PrismaClient()
     }
 
-    connect(): ResultAsync<void, Error> {
-        return ResultAsync.fromPromise(this.client.$connect())
+    connect() {
+        return this.client.$connect()
+    }
+
+    disconnect() {
+        return this.client.$disconnect()
     }
 }

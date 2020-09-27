@@ -54,7 +54,7 @@ class Container implements IContainer {
     }
 
     get logger(): winston.Logger {
-        const create = () => {
+        const create = (): winston.Logger => {
             try {
                 return winston.createLogger({
                     transports: [new winston.transports.Console()],
@@ -90,6 +90,6 @@ class Container implements IContainer {
     }
 
     get db(): db.IDB {
-        return this.getDep('db', db.newDB)
+        return this.getDep('db', (): db.IDB => db.newDB(this))
     }
 }

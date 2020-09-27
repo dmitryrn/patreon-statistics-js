@@ -7,10 +7,11 @@ COPY ./prisma/schema.prisma ./prisma/schema.prisma
 COPY ./internal ./internal
 COPY ./scripts/migrations.ts ./scripts/migrations.ts
 
-COPY ./test-functional/*.ts ./test-functional
+# the tests themselves
+COPY ./test-functional ./test-functional
 
 RUN npm install
 
 RUN npx prisma generate
 
-CMD ["npx", "jest"]
+CMD ["npx", "jest", "--testPathIgnorePatterns", "internal"]

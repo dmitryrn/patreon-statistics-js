@@ -63,7 +63,7 @@ export class Server implements IServer {
                     const status = 200
                     const data = result.value
 
-                    this.container.logger.log('request finished', {
+                    this.container.logger.info('request finished', {
                         path,
                         status,
                         data,

@@ -17,12 +17,16 @@ describe('stats', () => {
         await db.$connect()
     })
 
-    test('should return empty array of snapshots', async (done) => {
+    afterAll(async () => {
+        await db.$disconnect()
+    })
+
+    test('/10-users', async () => {
         await db.patreon_user.deleteMany({})
         
-        const expectedIDs: PatreonUser[] = []
+        const insertedUsers: PatreonUser[] = []
         for (let i = 0; i < 15; i++) {
-            expectedIDs.push({
+            insertedUsers.push({
                 id: String(i)
             })
             await db.patreon_user.create({
@@ -30,15 +34,15 @@ describe('stats', () => {
             })
         }
 
+        let gotUsers: PatreonUser[]
         try {
             const res = await fetch('http://' + process.env.APP_URL + '/10-users')
-            const data = await res.json()
-    
-            assert.deepStrictEqual(data, expectedIDs)
+            gotUsers = await res.json()
         } catch (err) {
             fail(['request failed with', err])
         }
-    
-        done()
+
+        expect(gotUsers.length).toBe(10)
+        expect(gotUsers.every(({id}) => insertedUsers.map(({id}) => id).includes(id)))
     })
 })
