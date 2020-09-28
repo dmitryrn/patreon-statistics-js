@@ -35,20 +35,25 @@ export const appDo: appDoType = async () => {
         }
 
         const onKill = async (code: NodeJS.Signals) => {
+            // TODO: actually test this logic when issue is fixed
+            // https://github.com/prisma/prisma/issues/3773
+
             container.logger.info(`Received exit signal ${code}, shutting down gracefully`)
-            
-            try {
-                await container.db.disconnect()
-                container.logger.info('disconnected from db')
-            } catch (error) {
-                container.logger.error('dirty disconnect from db', error)
-            }
-            try {
-                await container.server.shutDown()
-                container.logger.info('server stopped')
-            } catch (error) {
-                container.logger.error('dirty server shutdown', error)
-            }
+
+            const closeDB = container.db.disconnect()
+            closeDB
+                .then(() => {container.logger.info('disconnected from db')})
+                .catch(err => {container.logger.error('dirty disconnect from db', err)})
+
+            const stopServer = container.server.shutDown()
+            stopServer
+                .then(() => container.logger.info('server stopped'))
+                .catch(err => container.logger.error('dirty server shutdown', err))
+
+            await Promise.allSettled([
+                closeDB,
+                stopServer,
+            ])
 
             resolve()
         }
